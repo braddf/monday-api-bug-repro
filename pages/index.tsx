@@ -1,9 +1,18 @@
-import type { NextPage } from 'next'
+import type { NextPage, NextPageContext } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
+import client from "../apollo-client";
+import { gql } from "@apollo/client";
+type IProps = {
+  boards: JSON[]
+}
 
-const Home: NextPage = () => {
+const Home: NextPage<IProps> = ({ boards }) => {
+  // @ts-ignore
+  console.log(boards[0].items[0])
+  // @ts-ignore
+  console.log(boards[0].items[1])
   return (
     <div className={styles.container}>
       <Head>
@@ -68,5 +77,55 @@ const Home: NextPage = () => {
     </div>
   )
 }
+
+
+export async function getServerSideProps(context: NextPageContext) {
+  const boards = [1917837251];
+  const { data } = await client.query({
+    query: gql`
+        query Boards($ids: [Int]) {
+            me {
+                name
+            }
+
+            boards(ids: $ids) {
+                name
+                items {
+                    name
+                    group {
+                        id
+                        title
+                    }
+
+                    column_values {
+#                        id
+                        value
+                        text
+                    }
+                }
+                columns {
+                    title
+                    id
+                    type
+                }
+                groups {
+                    title
+                    id
+                }
+            }
+        }
+    `,
+    variables: {
+      ids: boards,
+    },
+  });
+
+  return {
+    props: {
+      boards: data.boards,
+    },
+  };
+}
+
 
 export default Home
