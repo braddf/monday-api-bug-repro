@@ -81,6 +81,7 @@ const Home: NextPage<IProps> = ({ boards }) => {
 
 export async function getServerSideProps(context: NextPageContext) {
   const boards = [1917837251];
+  await client.clearStore();
   const { data } = await client.query({
     query: gql`
         query Boards($ids: [Int]) {
